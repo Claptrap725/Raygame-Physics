@@ -5,14 +5,17 @@
 class GameObject
 {
 private:
-	glm::vec2 forces;
+	
 public:
 	GameObject();
 	
+	// image to draw
 	Texture2D sprite;
 
-
+	// update logic
 	void update();
 
+	// draw sprite
+	void draw() const;
 };
 

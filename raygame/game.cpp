@@ -1,18 +1,30 @@
-#include <iostream>
-#include "game.h"
-#include "raylib.h"
+#include "game.h" // header to be implemented
+
+#include <iostream> // cout
+#include <ctime>	// time
+#include <cstdlib>	// rand, srand
+
+#include "raylib.h" // raylib
+
+// inclusion order
+// - header that I am implementing
+// - system libraries
+// - project libraries
+// - other headers from this project
 
 game::game()
 {
 	accumulatedDeltaTime = 0.0f;
 	fixedTimeStep = 1.0f / 30.0f;
 	shouldRunFixedUpdate = true;
+
+	srand(time(0));
 }
 
 void game::init() 
 {
-	int screenWidth = 800;
-	int screenHeight = 450;
+	int screenWidth = 1280;
+	int screenHeight = 720;
 
 	InitWindow(screenWidth, screenHeight, "raylib [core] example - basic window");
 
@@ -28,7 +40,10 @@ bool game::update()
 		accumulatedDeltaTime = 0;
 	}
 
-	std::cout << "Update\n";
+	for (auto& obj : GameObjects)
+	{
+		obj.update();
+	}
 	
 	return !WindowShouldClose();
 }
@@ -36,7 +51,10 @@ bool game::update()
 void game::fixedUpdate()
 {
 	shouldRunFixedUpdate = false;
-	std::cout << "Fixed Update\n";
+	for (auto& obj : RigidBodies)
+	{
+		obj.fixedUpdate(fixedTimeStep);
+	}
 }
 
 void game::draw() const
@@ -45,7 +63,10 @@ void game::draw() const
 
 	ClearBackground(RAYWHITE);
 
-	DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
+	for (auto& obj : GameObjects)
+	{
+		obj.draw();
+	}
 
 	EndDrawing();
 }
