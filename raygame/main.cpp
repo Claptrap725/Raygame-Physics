@@ -10,43 +10,28 @@
 ********************************************************************************************/
 
 #include "raylib.h"
+#include "glm.hpp"
+#include "game.h"
 
 int main()
 {
-	// Initialization
-	//--------------------------------------------------------------------------------------
-	int screenWidth = 800;
-	int screenHeight = 450;
+	game app;
+	app.init();
+	app.fixedTimeStep = 1.0f / 20.0f;
+	
+	bool shouldRun = true;
 
-	InitWindow(screenWidth, screenHeight, "raylib [core] example - basic window");
-
-	SetTargetFPS(60);
-	//--------------------------------------------------------------------------------------
-
-	// Main game loop
-	while (!WindowShouldClose())    // Detect window close button or ESC key
+	while (shouldRun)    // Detect window close button or ESC key
 	{
-		// Update
-		//----------------------------------------------------------------------------------
-		// TODO: Update your variables here
-		//----------------------------------------------------------------------------------
+		shouldRun = app.update();
 
-		// Draw
-		//----------------------------------------------------------------------------------
-		BeginDrawing();
-
-		ClearBackground(RAYWHITE);
-
-		DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
-
-		EndDrawing();
-		//----------------------------------------------------------------------------------
+		if (app.shouldRunFixedUpdate)
+			app.fixedUpdate();
+		
+		app.draw();
 	}
 
-	// De-Initialization
-	//--------------------------------------------------------------------------------------   
-	CloseWindow();        // Close window and OpenGL context
-	//--------------------------------------------------------------------------------------
+	app.exit();
 
 	return 0;
 }
