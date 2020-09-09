@@ -9,7 +9,7 @@ struct circle
 
 struct aabb
 {
-	glm::vec2 size;
+	glm::vec2 halfExtents;
 };
 
 enum class shapeType : uint8_t
@@ -28,3 +28,19 @@ struct collider
 		aabb aabbData;
 	};
 };
+
+// Returns true if circles are colliding
+bool checkCircleCircle(glm::vec2 posA, circle circleA, glm::vec2 posB, circle circleB);
+// Returns true if circles are colliding
+bool checkCircleCircle(glm::vec2 posA, collider circleA, glm::vec2 posB, collider circleB);
+
+// Returns true if boxes are colliding
+bool checkBoxBox(glm::vec2 posA, aabb boxA, glm::vec2 posB, aabb boxB);
+// Returns true if circles are colliding
+bool checkBoxBox(glm::vec2 posA, collider boxA, glm::vec2 posB, collider boxB);
+
+
+// Returns true if circle and box are colliding
+bool checkCircleBox(glm::vec2 posCirc, circle circ, glm::vec2 posBox, aabb box);
+// Returns true if circle and box are colliding
+bool checkCircleBox(glm::vec2 posCirc, collider circ, glm::vec2 posBox, collider box);

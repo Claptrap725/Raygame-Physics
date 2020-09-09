@@ -9,6 +9,7 @@ RigidBody::RigidBody()
 	forces = glm::vec2{ 0, 0 };
 	mass = 10.0f;
 	collider = { shapeType::CIRCLE, circle{10.0f} };
+	addForce(glm::vec2{ 0,20});
 }
 
 void RigidBody::update()
@@ -18,7 +19,11 @@ void RigidBody::update()
 
 void RigidBody::fixedUpdate(float deltaTime)
 {
+	pos += vel * deltaTime;
 
+
+	vel += forces;
+	vel *= 0.99f;
 }
 
 void RigidBody::draw() const
@@ -27,12 +32,16 @@ void RigidBody::draw() const
 	{
 	case shapeType::NONE:
 		DrawPixel((int)pos.x, (int)pos.y, RED);
+		break;
 	case shapeType::CIRCLE:
 		DrawCircleLines((int)pos.x, (int)pos.y, collider.circleData.radius, RED);
+		break;
 	case shapeType::AABB:
-		DrawRectangleLines((int)pos.x, (int)pos.y, collider.aabbData.size.x, collider.aabbData.size.y, RED);
+		DrawRectangleLines((int)pos.x, (int)pos.y, collider.aabbData.halfExtents.x*2, collider.aabbData.halfExtents.y*2, RED);
+		break;
 	default:
 		break;
+	}
 }
 
 void RigidBody::addForce(glm::vec2 force)
@@ -52,5 +61,5 @@ void RigidBody::addAccel(glm::vec2 accel)
 
 void RigidBody::addVelocityChange(glm::vec2 velChng)
 {
-
+	vel += velChng;
 }
