@@ -21,30 +21,24 @@
     <ClCompile Include="game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="RigidBody.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="shapes.cpp">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GameObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="shapes.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="RigidBody.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="enumUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shapes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

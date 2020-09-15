@@ -1,14 +1,22 @@
 #pragma once
-#include "GameObject.h"
 #include "shapes.h"
 
-class RigidBody :
-	public GameObject
+class RigidBody
 {
 private:
-	// idk honestly
+	
 	glm::vec2 forces;
+
+	void resolveCircleCircle(RigidBody* a, RigidBody* b);
+	void resolveBoxBox(RigidBody* a, RigidBody* b);
+	void resolveCircleBox(RigidBody* a, RigidBody* b);
+	void resolveBoxCircle(RigidBody* a, RigidBody* b);
+
 public:
+
+	// if true the rb will fall
+	bool useGravity;
+
 	// world position of rb
 	glm::vec2 pos;
 
@@ -18,19 +26,36 @@ public:
 	// mass of rb
 	float mass;
 
+	// how bouncy the rb is
+	float elaticity;
+
 	// this rb's collider
 	collider collider;
 
 	RigidBody();
 
 	// run logic update on this rb
-	void update();
+	void virtual update();
 	
 	// run physiscs update on this rb
-	void fixedUpdate(float deltaTime);
+	void virtual fixedUpdate(float deltaTime) ;
 
 	// draw collider
-	void draw() const;
+	void virtual draw() const;
+
+	// deletes this rb
+	void destroy();
+
+
+	// called when this body colllides with another, manages collision events
+	void onCollision(RigidBody other);
+
+	// event called on the first frame when a new collsion happens
+	void virtual onCollisionEnter(RigidBody other);
+	// event called on every physics frame while a collsion continues
+	void virtual onCollisionStay(RigidBody other);
+	// event called on the frame after a collision is resovled
+	void virtual onCollisionExit(RigidBody other);
 
 	// addForce
 	void addForce(glm::vec2 force);

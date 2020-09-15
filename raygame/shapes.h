@@ -15,8 +15,9 @@ struct aabb
 enum class shapeType : uint8_t
 {
 	NONE	= 0,
-	CIRCLE = 1 << 0,
+	CIRCLE	= 1 << 0,
 	AABB	= 1 << 1,
+	BOTH	= 1 << 0 | 1 << 1,
 };
 
 struct collider
@@ -28,6 +29,17 @@ struct collider
 		aabb aabbData;
 	};
 };
+
+struct line
+{
+	// first known point on the line
+	glm::vec2 p1;
+	// second known point on the line
+	glm::vec2 p2;
+};
+
+// returns the position of the closest point in local space
+glm::vec2 getClosetPointOnBox(glm::vec2 pos, glm::vec2 posBox, aabb box);
 
 // Returns true if circles are colliding
 bool checkCircleCircle(glm::vec2 posA, circle circleA, glm::vec2 posB, circle circleB);
@@ -44,3 +56,6 @@ bool checkBoxBox(glm::vec2 posA, collider boxA, glm::vec2 posB, collider boxB);
 bool checkCircleBox(glm::vec2 posCirc, circle circ, glm::vec2 posBox, aabb box);
 // Returns true if circle and box are colliding
 bool checkCircleBox(glm::vec2 posCirc, collider circ, glm::vec2 posBox, collider box);
+
+// returns the point of intersection
+glm::vec2 lineIntersection(line a, line b);

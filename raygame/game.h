@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include <unordered_map>
-#include "GameObject.h"
 #include "RigidBody.h"
 
 using collisionPair = uint8_t;
@@ -11,11 +10,11 @@ using collisionMap = std::unordered_map<collisionPair, collisionFunc>;
 class game
 {
 	float accumulatedDeltaTime;
-	std::vector<GameObject> gameObjects;
-	std::vector<RigidBody> rigidBodies;
 
 	static collisionMap collisionCheckers;
 public:
+	static std::vector<RigidBody> rigidBodies;
+
 	// When true game will run fixedUpdate() this frame
 	bool shouldRunFixedUpdate;
 	// Time between every fixedUpdate()

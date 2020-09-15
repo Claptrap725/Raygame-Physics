@@ -25,6 +25,7 @@ collisionMap setupCollisionChecks()
 }
 
 collisionMap game::collisionCheckers = setupCollisionChecks();
+std::vector<RigidBody> game::rigidBodies;
 
 game::game()
 {
@@ -32,15 +33,12 @@ game::game()
 	fixedTimeStep = 1.0f / 30.0f;
 	shouldRunFixedUpdate = true;
 
-	srand(time(0));
+	srand((unsigned int)time(0));
 }
 
 void game::init() 
 {
-	int screenWidth = 1280;
-	int screenHeight = 720;
-
-	InitWindow(screenWidth, screenHeight, "raylib [core] example - basic window");
+	InitWindow(1280, 720, "raylib [core] example - basic window");
 
 	SetTargetFPS(60);
 }
@@ -54,7 +52,7 @@ bool game::update()
 		accumulatedDeltaTime = 0;
 	}
 
-	for (auto& obj : gameObjects)
+	for (auto& obj : rigidBodies)
 	{
 		obj.update();
 	}
@@ -65,11 +63,12 @@ bool game::update()
 
 		RigidBody spawn;
 		spawn.pos = { cursorPos.x, cursorPos.y };
-		spawn.mass = (rand() % 10) + 1;
+		spawn.mass = (float)(rand() % 30) + 40;
 		spawn.collider.colliderShape = shapeType::CIRCLE;
-		spawn.collider.circleData.radius = spawn.mass;
-		spawn.addImpulse({ 1000,0 });
-
+		spawn.collider.circleData.radius = spawn.mass/3.1415f*2;
+		
+		if (IsKeyDown(KEY_LEFT_CONTROL))
+			spawn.useGravity = false;
 
 		rigidBodies.push_back(spawn);
 	}
@@ -80,11 +79,12 @@ bool game::update()
 
 		RigidBody spawn;
 		spawn.pos = { cursorPos.x, cursorPos.y };
-		spawn.mass = (rand() % 10) + 1;
+		spawn.mass = (float)((rand() % 30) + 40);
 		spawn.collider.colliderShape = shapeType::AABB;
-		spawn.collider.aabbData.halfExtents = glm::vec2{ glm::sqrt(spawn.mass),  glm::sqrt(spawn.mass) };
-		spawn.addImpulse({ 0,-1000 });
-
+		spawn.collider.aabbData.halfExtents = glm::vec2{ glm::sqrt(spawn.mass)*5,  glm::sqrt(spawn.mass)*5 };
+		
+		if (IsKeyDown(KEY_LEFT_CONTROL))
+			spawn.useGravity = false;
 
 		rigidBodies.push_back(spawn);
 	}
@@ -121,7 +121,11 @@ void game::fixedUpdate()
 
 
 			if (collision)
+			{
 				std::cout << "COLLISION!\n";
+				lhs.onCollision(rhs);
+				rhs.onCollision(lhs);
+			}
 		}
 	}
 
@@ -136,11 +140,6 @@ void game::draw() const
 	BeginDrawing();
 
 	ClearBackground(RAYWHITE);
-
-	for (auto& obj : gameObjects)
-	{
-		obj.draw();
-	}
 
 	for (auto& obj : rigidBodies)
 	{
