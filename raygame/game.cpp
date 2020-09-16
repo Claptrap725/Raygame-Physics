@@ -88,6 +88,21 @@ bool game::update()
 
 		rigidBodies.push_back(spawn);
 	}
+
+	if (IsMouseButtonDown(MOUSE_MIDDLE_BUTTON))
+	{
+		for (auto& obj : rigidBodies)
+		{
+			auto cursorPosRaw = GetMousePosition();
+			glm::vec2 cursorPos = { cursorPosRaw.x, cursorPosRaw.y };
+			if (checkPoint(cursorPos, obj.pos, obj.collider))
+			{
+				obj.pos = cursorPos;
+				obj.vel = { 0,0 };
+				break;
+			}
+		}
+	}
 	
 	return !WindowShouldClose();
 }
@@ -141,6 +156,11 @@ void game::draw() const
 	{
 		obj.draw();
 	}
+
+	DrawText("Left click to spawn circle.", 10, 10, 30, BLACK);
+	DrawText("Right click to spawn box.", 10, 50, 30, BLACK);
+	DrawText("Hold left CTRL to spawn objects without gravity.", 10, 90, 30, BLACK);
+	DrawText("Middle click to drag objects.", 10, 130, 30, BLACK);
 
 	EndDrawing();
 }

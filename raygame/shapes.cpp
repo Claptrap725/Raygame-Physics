@@ -55,14 +55,41 @@ bool checkCircleBox(glm::vec2 posCirc, collider circ, glm::vec2 posBox, collider
 	return checkCircleBox(posCirc, circ.circleData, posBox, box.aabbData);
 }
 
+bool checkCirclePoint(glm::vec2 pos, glm::vec2 posCirc, circle circle)
+{
+	return glm::distance(pos, posCirc) < circle.radius;
+}
+bool checkBoxPoint(glm::vec2 pos, glm::vec2 posBox, aabb box)
+{
+	if (pos.x < posBox.x - box.halfExtents.x) 
+		return false;
+	if (pos.x > posBox.x + box.halfExtents.x) 
+		return false;
+	if (pos.y < posBox.y - box.halfExtents.y) 
+		return false;
+	if (pos.y > posBox.y + box.halfExtents.y) 
+		return false;
+
+	return true;
+}
+bool checkPoint(glm::vec2 pos, glm::vec2 posObj, collider col)
+{
+	if (col.colliderShape == shapeType::CIRCLE)
+		return checkCirclePoint(pos, posObj, col.circleData);
+	if (col.colliderShape == shapeType::AABB)
+		return checkBoxPoint(pos, posObj, col.aabbData);
+
+	return false;
+}
+
 glm::vec2 lineIntersection(line a, line b)
 {
 	float A1 = a.p2.y - a.p1.y;
-	float B1 = a.p1.x - a.p2.y;
+	float B1 = a.p1.x - a.p2.x;
 	float C1 = A1 * a.p1.x + B1 * a.p1.y;
 
 	float A2 = b.p2.y - b.p1.y;
-	float B2 = b.p1.x - b.p2.y;
+	float B2 = b.p1.x - b.p2.x;
 	float C2 = A2 * b.p1.x + B2 * b.p1.y;
 
 	float denominator = A1 * B2 - A2 * B1;

@@ -73,7 +73,7 @@ void RigidBody::fixedUpdate(float deltaTime)
 	pos += vel * deltaTime;
 
 	forces = { 0,0 };
-	vel *= 0.99f;
+	//vel *= 0.999f;
 }
 
 void RigidBody::draw() const
@@ -170,40 +170,6 @@ void RigidBody::resolveCircleCircle(RigidBody* a, RigidBody* b)
 }
 
 // RESOLVES ONLY THIS RB
-void RigidBody::resolveBoxBox2(RigidBody* a, RigidBody* b)
-{
-	std::cout << "COLLISION! BvB\n";
-	glm::vec2 colNormal = glm::normalize(a->pos - b->pos);
-	
-	float dis = glm::distance(a->pos, b->pos);
-	
-	float xDiff = 0;
-	float yDiff = 0;
-	if (a->pos.y > b->pos.y)
-		yDiff = glm::abs((a->pos.y - a->collider.aabbData.halfExtents.y) - (b->pos.y + b->collider.aabbData.halfExtents.y));
-	else
-		yDiff = glm::abs((a->pos.y + a->collider.aabbData.halfExtents.y) - (b->pos.y - b->collider.aabbData.halfExtents.y));
-
-	if (a->pos.x > b->pos.x)
-		xDiff = glm::abs((a->pos.x - a->collider.aabbData.halfExtents.x) - (b->pos.x + b->collider.aabbData.halfExtents.x));
-	else
-		xDiff = glm::abs((a->pos.x + a->collider.aabbData.halfExtents.x) - (b->pos.x - b->collider.aabbData.halfExtents.x));
-	
-	// Didn't have time to implement true penDistance. Thought the average values would be close enough for now.
-	float penetrationDis = (xDiff + yDiff) / 2;
-
-	glm::vec2 relVel = a->vel - b->vel;
-
-	float impulseMag = glm::dot(-(-1.0f + (a->elaticity + b->elaticity) / 2.0f) * relVel, colNormal) /
-		glm::dot(colNormal, colNormal * (1 / a->mass + 1 / b->mass));
-
-	glm::vec2 resImpulse = impulseMag  * -colNormal;
-
-	a->addPosChange(colNormal * penetrationDis * 0.3f);
-
-	a->addImpulse(resImpulse);
-}
-
 void RigidBody::resolveBoxBox(RigidBody* a, RigidBody* b)
 {
 	std::cout << "COLLISION! BvB\n";
@@ -250,7 +216,7 @@ void RigidBody::resolveBoxBox(RigidBody* a, RigidBody* b)
 
 	glm::vec2 resImpulse = impulseMag * -colNormal;
 
-	a->addPosChange(colNormal * penetrationDis * 0.3f);
+	a->addPosChange(colNormal * penetrationDis * 0.07f);
 
 	a->addImpulse(resImpulse);
 }

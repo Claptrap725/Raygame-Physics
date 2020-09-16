@@ -57,5 +57,13 @@ bool checkCircleBox(glm::vec2 posCirc, circle circ, glm::vec2 posBox, aabb box);
 // Returns true if circle and box are colliding
 bool checkCircleBox(glm::vec2 posCirc, collider circ, glm::vec2 posBox, collider box);
 
+// Returns true if the point is within the bounds of the circle
+bool checkCirclePoint(glm::vec2 pos, glm::vec2 posCirc, circle circle);
+// Returns true if the point is within the bounds of the box
+bool checkBoxPoint(glm::vec2 pos, glm::vec2 posBox, aabb box);
+// Returns true if the point is within the bounds of the collider. Can use any collider.
+bool checkPoint(glm::vec2 pos, glm::vec2 posObj, collider col);
+
+
 // returns the point of intersection
 glm::vec2 lineIntersection(line a, line b);
