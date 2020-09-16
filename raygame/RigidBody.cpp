@@ -23,19 +23,42 @@ RigidBody::RigidBody()
 	collider = { shapeType::CIRCLE, circle{10.0f} };
 	useGravity = true;
 	isStatic = false;
+	dead = false;
 }
 
 void RigidBody::update()
 {
 	if (pos.x > 1280 + 50)
+	{
 		destroy();
+		return;
+	}
 	if (pos.x < 0 - 50)
+	{
 		destroy();
+		return;
+	}
 	if (pos.y < 0 - 50)
+	{
 		destroy();
+		return;
+	}
 	if (pos.y > 720 + 50)
+	{
 		destroy();
+		return;
+	}
 }
+
+bool RigidBody::operator==(const RigidBody & other)
+{
+	return (this == &other);
+}
+bool RigidBody::operator!=(const RigidBody & other)
+{
+	return (this != &other);
+}
+
 
 void RigidBody::fixedUpdate(float deltaTime)
 {
@@ -74,13 +97,13 @@ void RigidBody::draw() const
 
 void RigidBody::destroy()
 {
-	int iteratorPos = 0;
-	for (auto i = game::rigidBodies.begin(); i != game::rigidBodies.end() && &*i != this; i++)
+	if (!dead)
 	{
-		iteratorPos++;
+		std::cout << "killing";
+		dead = true;
+		auto it = std::find(game::rigidBodies.begin(), game::rigidBodies.end(), *this);
+		game::rigidBodies.erase(it);
 	}
-	std::cout << "Erasing: " << iteratorPos;
-	game::rigidBodies.erase(game::rigidBodies.begin() + iteratorPos);
 }
 
 

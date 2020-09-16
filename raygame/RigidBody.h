@@ -5,6 +5,7 @@ class RigidBody
 {
 private:
 	
+	bool dead;
 	glm::vec2 forces;
 
 	void resolveCircleCircle(RigidBody* a, RigidBody* b);
@@ -65,5 +66,8 @@ public:
 
 	// addVelocityChange
 	void addVelocityChange(glm::vec2 velChng);
+
+	bool operator==(const RigidBody & other);
+	bool operator!=(const RigidBody & other);
 };
 

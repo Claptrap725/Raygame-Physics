@@ -41,17 +41,6 @@ void game::init()
 	InitWindow(1280, 720, "raylib [core] example - basic window");
 
 	SetTargetFPS(60);
-	for (int i = 0; i < 14; i++)
-	{
-		RigidBody spawn;
-		spawn.pos = { i*100,730 };
-		spawn.mass = 1000;
-		spawn.collider.colliderShape = shapeType::AABB;
-		spawn.collider.aabbData.halfExtents = glm::vec2{ 100,  50 };
-		spawn.useGravity = false;
-		spawn.isStatic = true;
-		rigidBodies.push_back(spawn);
-	}
 }
 
 bool game::update()
