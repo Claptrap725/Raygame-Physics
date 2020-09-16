@@ -13,11 +13,12 @@
 #include "glm.hpp"
 #include "game.h"
 
+game app;
+
 int main()
 {
-	game app;
 	app.init();
-	app.fixedTimeStep = 1.0f / 20.0f;
+	app.fixedTimeStep = 1.0f / 30.0f;
 	
 	bool shouldRun = true;
 

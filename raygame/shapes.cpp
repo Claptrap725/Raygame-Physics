@@ -67,7 +67,10 @@ glm::vec2 lineIntersection(line a, line b)
 
 	float denominator = A1 * B2 - A2 * B1;
 
-	assertm(denominator == 0, "There is no point of intersection for parallel lines.");
+	if (denominator == 0)
+	{
+		return { 0,0 };
+	}
 
 	glm::vec2 result = { (B2 * C1 - B1 * C2) / denominator,
 						(A1 * C2 - A2 * C1) / denominator };

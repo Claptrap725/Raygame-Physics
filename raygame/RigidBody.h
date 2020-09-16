@@ -9,13 +9,16 @@ private:
 
 	void resolveCircleCircle(RigidBody* a, RigidBody* b);
 	void resolveBoxBox(RigidBody* a, RigidBody* b);
+	void resolveBoxBox2(RigidBody* a, RigidBody* b);
 	void resolveCircleBox(RigidBody* a, RigidBody* b);
-	void resolveBoxCircle(RigidBody* a, RigidBody* b);
 
 public:
 
 	// if true the rb will fall
 	bool useGravity;
+
+	// if true rb will not move
+	bool isStatic;
 
 	// world position of rb
 	glm::vec2 pos;
@@ -48,14 +51,8 @@ public:
 
 
 	// called when this body colllides with another, manages collision events
-	void onCollision(RigidBody other);
+	void onCollision(RigidBody* other);
 
-	// event called on the first frame when a new collsion happens
-	void virtual onCollisionEnter(RigidBody other);
-	// event called on every physics frame while a collsion continues
-	void virtual onCollisionStay(RigidBody other);
-	// event called on the frame after a collision is resovled
-	void virtual onCollisionExit(RigidBody other);
 
 	// addForce
 	void addForce(glm::vec2 force);
@@ -63,8 +60,8 @@ public:
 	// addImpulse
 	void addImpulse(glm::vec2 impulse);
 
-	// addAcceleration
-	void addAccel(glm::vec2 accel);
+	// changes pos
+	void addPosChange(glm::vec2 change);
 
 	// addVelocityChange
 	void addVelocityChange(glm::vec2 velChng);

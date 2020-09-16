@@ -41,6 +41,17 @@ void game::init()
 	InitWindow(1280, 720, "raylib [core] example - basic window");
 
 	SetTargetFPS(60);
+	for (int i = 0; i < 14; i++)
+	{
+		RigidBody spawn;
+		spawn.pos = { i*100,730 };
+		spawn.mass = 1000;
+		spawn.collider.colliderShape = shapeType::AABB;
+		spawn.collider.aabbData.halfExtents = glm::vec2{ 100,  50 };
+		spawn.useGravity = false;
+		spawn.isStatic = true;
+		rigidBodies.push_back(spawn);
+	}
 }
 
 bool game::update()
@@ -116,15 +127,11 @@ void game::fixedUpdate()
 
 			bool collision = collisionCheckers[pairType](first->pos, first->collider, second->pos, second->collider);
 
-			//if (lhs.collider.colliderShape == shapeType::CIRCLE && rhs.collider.colliderShape == shapeType::CIRCLE)
-			//	collision = checkCircleCircle(lhs.pos, lhs.collider, rhs.pos, rhs.collider);
-
 
 			if (collision)
 			{
-				std::cout << "COLLISION!\n";
-				lhs.onCollision(rhs);
-				rhs.onCollision(lhs);
+				first->onCollision(second);
+				second->onCollision(first);
 			}
 		}
 	}

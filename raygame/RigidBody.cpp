@@ -4,6 +4,15 @@
 #include "game.h"
 #include "raylib.h" // raylib
 
+#define ATOPLINE { a->pos + a->collider.aabbData.halfExtents.y, a->pos + a->collider.aabbData.halfExtents.y + glm::vec2{ 1,0 } }
+#define ABOTTEMLINE { a->pos - a->collider.aabbData.halfExtents.y, a->pos - a->collider.aabbData.halfExtents.y + glm::vec2{ 1,0 } }
+#define ARIGHTLINE { a->pos + a->collider.aabbData.halfExtents.x, a->pos + a->collider.aabbData.halfExtents.x + glm::vec2{ 0,1 } }
+#define ALEFTLINE { a->pos - a->collider.aabbData.halfExtents.x, a->pos - a->collider.aabbData.halfExtents.x + glm::vec2{ 0,1 } }
+#define BTOPLINE { b->pos + b->collider.aabbData.halfExtents.y, b->pos + b->collider.aabbData.halfExtents.y + glm::vec2{ 1,0 } }
+#define BBOTTEMLINE { b->pos - b->collider.aabbData.halfExtents.y, b->pos - b->collider.aabbData.halfExtents.y + glm::vec2{ 1,0 } }
+#define BRIGHTLINE { b->pos + b->collider.aabbData.halfExtents.x, b->pos + b->collider.aabbData.halfExtents.x + glm::vec2{ 0,1 } }
+#define BLEFTLINE { b->pos - b->collider.aabbData.halfExtents.x, b->pos - b->collider.aabbData.halfExtents.x + glm::vec2{ 0,1 } }
+
 RigidBody::RigidBody()
 {
 	pos = glm::vec2{ 0, 0 };
@@ -12,7 +21,8 @@ RigidBody::RigidBody()
 	elaticity = 0.6f;
 	mass = 10.0f;
 	collider = { shapeType::CIRCLE, circle{10.0f} };
-	
+	useGravity = true;
+	isStatic = false;
 }
 
 void RigidBody::update()
@@ -30,7 +40,12 @@ void RigidBody::update()
 void RigidBody::fixedUpdate(float deltaTime)
 {
 	if (useGravity)
-		addForce(glm::vec2{ 0,20 });
+		addForce(glm::vec2{ 0,30 });
+	if (isStatic)
+	{
+		forces = { 0,0 };
+		vel = { 0,0 };
+	}
 	vel += forces;
 	pos += vel * deltaTime;
 
@@ -49,7 +64,8 @@ void RigidBody::draw() const
 		DrawCircleLines((int)pos.x, (int)pos.y, collider.circleData.radius, RED);
 		break;
 	case shapeType::AABB:
-		DrawRectangleLines((int)pos.x, (int)pos.y, (int)(collider.aabbData.halfExtents.x*2), (int)(collider.aabbData.halfExtents.y*2), RED);
+		DrawRectangleLines((int)(pos.x - collider.aabbData.halfExtents.x), (int)(pos.y - collider.aabbData.halfExtents.y),
+						   (int)(collider.aabbData.halfExtents.x*2), (int)(collider.aabbData.halfExtents.y*2), RED);
 		break;
 	default:
 		break;
@@ -59,7 +75,7 @@ void RigidBody::draw() const
 void RigidBody::destroy()
 {
 	int iteratorPos = 0;
-	for (auto i = game::rigidBodies.begin(); &*i != this; i++)
+	for (auto i = game::rigidBodies.begin(); i != game::rigidBodies.end() && &*i != this; i++)
 	{
 		iteratorPos++;
 	}
@@ -78,9 +94,10 @@ void RigidBody::addImpulse(glm::vec2 impulse)
 	vel += impulse / mass;
 }
 
-void RigidBody::addAccel(glm::vec2 accel)
+void RigidBody::addPosChange(glm::vec2 change)
 {
-	
+	if (!isStatic)
+		pos += change;
 }
 
 void RigidBody::addVelocityChange(glm::vec2 velChng)
@@ -88,30 +105,29 @@ void RigidBody::addVelocityChange(glm::vec2 velChng)
 	vel += velChng;
 }
 
-void RigidBody::onCollision(RigidBody other)
+void RigidBody::onCollision(RigidBody* other)
 {
-	shapeType both = collider.colliderShape | other.collider.colliderShape;
+	shapeType both = collider.colliderShape | other->collider.colliderShape;
 
 	switch (both)
 	{
 	case shapeType::CIRCLE:
-		resolveCircleCircle(this, &other);
+		resolveCircleCircle(this, other);
 		break;
 	case shapeType::AABB:
-		resolveBoxBox(this, &other);
+		resolveBoxBox(this, other);
 		break;
 	case shapeType::BOTH:
 		if (collider.colliderShape == shapeType::CIRCLE)
-			resolveCircleBox(this, &other);
-		else
-			resolveBoxCircle(this, &other);
+			resolveCircleBox(this, other);
 		break;
 	}
 }
 
-
+// RESOLVES ONLY THIS RB
 void RigidBody::resolveCircleCircle(RigidBody* a, RigidBody* b)
 {
+	std::cout << "COLLISION! CvC\n";
 	float dis = glm::distance(a->pos, b->pos);
 	float penetrationDis = a->collider.circleData.radius + b->collider.circleData.radius - dis;
 
@@ -122,48 +138,129 @@ void RigidBody::resolveCircleCircle(RigidBody* a, RigidBody* b)
 	float impulseMag =	glm::dot(-(-1.0f + (a->elaticity + b->elaticity) / 2.0f) * relVel, colNormal) /
 						glm::dot(colNormal, colNormal * (1 / a->mass + 1 / b->mass));
 
-	glm::vec2 resImpulse = a->vel + (impulseMag / a->mass)  * -colNormal;
+	glm::vec2 resImpulse = impulseMag * -colNormal;
 
-	a->pos += colNormal * penetrationDis * 0.51f;
+	a->addPosChange(colNormal * penetrationDis * 0.51f);
 
-	a->vel = resImpulse;
+	a->addImpulse(resImpulse);
 
+}
+
+// RESOLVES ONLY THIS RB
+void RigidBody::resolveBoxBox2(RigidBody* a, RigidBody* b)
+{
+	std::cout << "COLLISION! BvB\n";
+	glm::vec2 colNormal = glm::normalize(a->pos - b->pos);
+	
+	float dis = glm::distance(a->pos, b->pos);
+	
+	float xDiff = 0;
+	float yDiff = 0;
+	if (a->pos.y > b->pos.y)
+		yDiff = glm::abs((a->pos.y - a->collider.aabbData.halfExtents.y) - (b->pos.y + b->collider.aabbData.halfExtents.y));
+	else
+		yDiff = glm::abs((a->pos.y + a->collider.aabbData.halfExtents.y) - (b->pos.y - b->collider.aabbData.halfExtents.y));
+
+	if (a->pos.x > b->pos.x)
+		xDiff = glm::abs((a->pos.x - a->collider.aabbData.halfExtents.x) - (b->pos.x + b->collider.aabbData.halfExtents.x));
+	else
+		xDiff = glm::abs((a->pos.x + a->collider.aabbData.halfExtents.x) - (b->pos.x - b->collider.aabbData.halfExtents.x));
+	
+	// Didn't have time to implement true penDistance. Thought the average values would be close enough for now.
+	float penetrationDis = (xDiff + yDiff) / 2;
+
+	glm::vec2 relVel = a->vel - b->vel;
+
+	float impulseMag = glm::dot(-(-1.0f + (a->elaticity + b->elaticity) / 2.0f) * relVel, colNormal) /
+		glm::dot(colNormal, colNormal * (1 / a->mass + 1 / b->mass));
+
+	glm::vec2 resImpulse = impulseMag  * -colNormal;
+
+	a->addPosChange(colNormal * penetrationDis * 0.3f);
+
+	a->addImpulse(resImpulse);
 }
 
 void RigidBody::resolveBoxBox(RigidBody* a, RigidBody* b)
 {
-	float dis = glm::distance(a->pos, b->pos);
-	float penetrationDis;
-
+	std::cout << "COLLISION! BvB\n";
 	glm::vec2 colNormal = glm::normalize(a->pos - b->pos);
 
+	float dis = glm::distance(a->pos, b->pos);
+
+	float penetrationDis = 0;
+
+	float xDiff = 0;
+	float yDiff = 0;
+	if (a->pos.y > b->pos.y)
+		yDiff = glm::abs((a->pos.y - a->collider.aabbData.halfExtents.y) - (b->pos.y + b->collider.aabbData.halfExtents.y));
+	else
+		yDiff = glm::abs((a->pos.y + a->collider.aabbData.halfExtents.y) - (b->pos.y - b->collider.aabbData.halfExtents.y));
+
+	if (a->pos.x > b->pos.x)
+		xDiff = glm::abs((a->pos.x - a->collider.aabbData.halfExtents.x) - (b->pos.x + b->collider.aabbData.halfExtents.x));
+	else
+		xDiff = glm::abs((a->pos.x + a->collider.aabbData.halfExtents.x) - (b->pos.x - b->collider.aabbData.halfExtents.x));
+
+	line colNormalLine = { a->pos, a->pos + colNormal };
+	
+	if (yDiff > xDiff)
+	{
+		if (a->pos.x > b->pos.x)
+			penetrationDis = glm::distance(lineIntersection(colNormalLine, BLEFTLINE), lineIntersection(colNormalLine, ARIGHTLINE));
+		else
+			penetrationDis = glm::distance(lineIntersection(colNormalLine, BRIGHTLINE), lineIntersection(colNormalLine, ALEFTLINE));
+	}
+	else
+	{
+		if (a->pos.y > b->pos.y)
+			penetrationDis = glm::distance(lineIntersection(colNormalLine, BBOTTEMLINE), lineIntersection(colNormalLine, ATOPLINE));
+		else
+			penetrationDis = glm::distance(lineIntersection(colNormalLine, BTOPLINE), lineIntersection(colNormalLine, ABOTTEMLINE));
+	}
+	
+
 	glm::vec2 relVel = a->vel - b->vel;
+
+	float impulseMag = glm::dot(-(-1.0f + (a->elaticity + b->elaticity) / 2.0f) * relVel, colNormal) /
+		glm::dot(colNormal, colNormal * (1 / a->mass + 1 / b->mass));
+
+	glm::vec2 resImpulse = impulseMag * -colNormal;
+
+	a->addPosChange(colNormal * penetrationDis * 0.3f);
+
+	a->addImpulse(resImpulse);
 }
 
+// RESOVLES BOTH RBs
 void RigidBody::resolveCircleBox(RigidBody* a, RigidBody* b)
 {
+	std::cout << "COLLISION! CvB\n";
+	glm::vec2 colNormal = glm::normalize(a->pos - b->pos);
 
-}
+	float dis = glm::distance(a->pos, b->pos);
+	glm::vec2 closestPoint = getClosetPointOnBox(a->pos, b->pos, b->collider.aabbData);
 
-void RigidBody::resolveBoxCircle(RigidBody* a, RigidBody* b)
-{
+	float penetrationDis = b->collider.circleData.radius - glm::distance(closestPoint + b->pos, a->pos);
+	penetrationDis *= -1;
 
-}
+	if (penetrationDis == 0) // center of circle is inside box
+	{
+		closestPoint = getClosetPointOnBox(colNormal * 100.0f, b->pos, b->collider.aabbData);
+		penetrationDis = glm::distance(a->pos, closestPoint) + a->collider.circleData.radius;
+		penetrationDis *= -1;
+	}
 
-void RigidBody::resolveCircleBox(RigidBody* a, RigidBody* b)
-{
+	glm::vec2 relVel = a->vel - b->vel;
 
-}
+	float impulseMag = glm::dot(-(1.0f + (a->elaticity + b->elaticity) / 2.0f) * relVel, colNormal) /
+		glm::dot(colNormal, colNormal * (1 / a->mass + 1 / b->mass));
 
-void RigidBody::onCollisionEnter(RigidBody other)
-{
+	glm::vec2 resImpulse = impulseMag * -colNormal;
 
-}
-void RigidBody::onCollisionStay(RigidBody other)
-{
+	a->addPosChange(-colNormal * penetrationDis * 0.51f);
+	b->addPosChange(colNormal * penetrationDis * 0.51f);
 
-}
-void RigidBody::onCollisionExit(RigidBody other)
-{
-
+	a->addImpulse(-resImpulse);
+	b->addImpulse(resImpulse);
 }
